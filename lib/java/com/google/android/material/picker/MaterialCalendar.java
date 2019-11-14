@@ -29,6 +29,8 @@ import androidx.annotation.RestrictTo;
 import androidx.annotation.RestrictTo.Scope;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.picker.metadata.MetaDataProvider;
+
 import androidx.core.util.Pair;
 import androidx.core.view.AccessibilityDelegateCompat;
 import androidx.core.view.ViewCompat;
@@ -68,6 +70,7 @@ public final class MaterialCalendar<S> extends PickerFragment<S> {
   private static final String GRID_SELECTOR_KEY = "GRID_SELECTOR_KEY";
   private static final String CALENDAR_CONSTRAINTS_KEY = "CALENDAR_CONSTRAINTS_KEY";
   private static final String CURRENT_MONTH_KEY = "CURRENT_MONTH_KEY";
+  private static final String META_DATA_PROVIDER_KEY = "META_DATA_PROVIDER_KEY";
   private static final int SMOOTH_SCROLL_MAX = 3;
 
   @VisibleForTesting
@@ -80,19 +83,21 @@ public final class MaterialCalendar<S> extends PickerFragment<S> {
   private Month current;
   private CalendarSelector calendarSelector;
   private CalendarStyle calendarStyle;
+  @Nullable private MetaDataProvider metaDataProvider;
   private RecyclerView yearSelector;
   private RecyclerView recyclerView;
   private View yearFrame;
   private View dayFrame;
 
   static <T> MaterialCalendar<T> newInstance(
-      DateSelector<T> dateSelector, int themeResId, CalendarConstraints calendarConstraints) {
+      DateSelector<T> dateSelector, int themeResId, CalendarConstraints calendarConstraints, @Nullable MetaDataProvider metaDataProvider) {
     MaterialCalendar<T> materialCalendar = new MaterialCalendar<>();
     Bundle args = new Bundle();
     args.putInt(THEME_RES_ID_KEY, themeResId);
     args.putParcelable(GRID_SELECTOR_KEY, dateSelector);
     args.putParcelable(CALENDAR_CONSTRAINTS_KEY, calendarConstraints);
     args.putParcelable(CURRENT_MONTH_KEY, calendarConstraints.getOpening());
+    args.putParcelable(META_DATA_PROVIDER_KEY, metaDataProvider);
     materialCalendar.setArguments(args);
     return materialCalendar;
   }
@@ -104,6 +109,7 @@ public final class MaterialCalendar<S> extends PickerFragment<S> {
     bundle.putParcelable(GRID_SELECTOR_KEY, dateSelector);
     bundle.putParcelable(CALENDAR_CONSTRAINTS_KEY, calendarConstraints);
     bundle.putParcelable(CURRENT_MONTH_KEY, current);
+    bundle.putParcelable(META_DATA_PROVIDER_KEY, metaDataProvider);
   }
 
   @Override
@@ -114,6 +120,7 @@ public final class MaterialCalendar<S> extends PickerFragment<S> {
     dateSelector = activeBundle.getParcelable(GRID_SELECTOR_KEY);
     calendarConstraints = activeBundle.getParcelable(CALENDAR_CONSTRAINTS_KEY);
     current = activeBundle.getParcelable(CURRENT_MONTH_KEY);
+    metaDataProvider = activeBundle.getParcelable(META_DATA_PROVIDER_KEY);
   }
 
   @NonNull
@@ -178,6 +185,7 @@ public final class MaterialCalendar<S> extends PickerFragment<S> {
             themedContext,
             dateSelector,
             calendarConstraints,
+            metaDataProvider,
             new OnDayClickListener() {
 
               @Override

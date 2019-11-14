@@ -35,6 +35,7 @@ import androidx.annotation.StringRes;
 import androidx.annotation.StyleRes;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.picker.metadata.MetaDataProvider;
 import com.google.android.material.resources.MaterialAttributes;
 import com.google.android.material.shape.MaterialShapeDrawable;
 import androidx.fragment.app.DialogFragment;
@@ -60,6 +61,7 @@ public final class MaterialDatePicker<S> extends DialogFragment {
   private static final String GRID_SELECTOR_KEY = "GRID_SELECTOR_KEY";
   private static final String CALENDAR_CONSTRAINTS_KEY = "CALENDAR_CONSTRAINTS_KEY";
   private static final String TITLE_TEXT_RES_ID_KEY = "TITLE_TEXT_RES_ID_KEY";
+  private static final String META_DATA_PROVIDER_KEY = "META_DATA_PROVIDER_KEY";
 
   @VisibleForTesting public static final Object CONFIRM_BUTTON_TAG = "CONFIRM_BUTTON_TAG";
 
@@ -89,6 +91,7 @@ public final class MaterialDatePicker<S> extends DialogFragment {
   private DateSelector<S> dateSelector;
   private PickerFragment<S> pickerFragment;
   private CalendarConstraints calendarConstraints;
+  @Nullable private MetaDataProvider<View> metaDataProvider;
   private MaterialCalendar<S> calendar;
   @StringRes private int titleTextResId;
   private boolean fullscreen;
@@ -104,6 +107,7 @@ public final class MaterialDatePicker<S> extends DialogFragment {
     args.putParcelable(GRID_SELECTOR_KEY, options.dateSelector);
     args.putParcelable(CALENDAR_CONSTRAINTS_KEY, options.calendarConstraints);
     args.putInt(TITLE_TEXT_RES_ID_KEY, options.titleTextResId);
+    args.putParcelable(META_DATA_PROVIDER_KEY, options.metaDataProvider);
     materialDatePickerDialogFragment.setArguments(args);
     return materialDatePickerDialogFragment;
   }
@@ -119,6 +123,7 @@ public final class MaterialDatePicker<S> extends DialogFragment {
             .setOpening(calendar.getCurrentMonth())
             .build());
     bundle.putInt(TITLE_TEXT_RES_ID_KEY, titleTextResId);
+    bundle.putParcelable(META_DATA_PROVIDER_KEY, metaDataProvider);
   }
 
   @Override
@@ -129,6 +134,7 @@ public final class MaterialDatePicker<S> extends DialogFragment {
     dateSelector = activeBundle.getParcelable(GRID_SELECTOR_KEY);
     calendarConstraints = activeBundle.getParcelable(CALENDAR_CONSTRAINTS_KEY);
     titleTextResId = activeBundle.getInt(TITLE_TEXT_RES_ID_KEY);
+    metaDataProvider = activeBundle.getParcelable(META_DATA_PROVIDER_KEY);
   }
 
   private int getThemeResId(Context context) {
@@ -278,7 +284,7 @@ public final class MaterialDatePicker<S> extends DialogFragment {
   private void startPickerFragment() {
     calendar =
         MaterialCalendar.newInstance(
-            dateSelector, getThemeResId(requireContext()), calendarConstraints);
+            dateSelector, getThemeResId(requireContext()), calendarConstraints, metaDataProvider);
     pickerFragment =
         headerToggleButton.isChecked()
             ? MaterialTextInputPicker.newInstance(dateSelector, calendarConstraints)
@@ -464,6 +470,7 @@ public final class MaterialDatePicker<S> extends DialogFragment {
     CalendarConstraints calendarConstraints;
     int titleTextResId = 0;
     S selection = null;
+    @Nullable MetaDataProvider metaDataProvider;
 
     private Builder(DateSelector<S> dateSelector) {
       this.dateSelector = dateSelector;
@@ -504,6 +511,11 @@ public final class MaterialDatePicker<S> extends DialogFragment {
     /** Sets the text used to guide the user at the top of the picker. */
     public Builder<S> setTitleTextResId(@StringRes int titleTextResId) {
       this.titleTextResId = titleTextResId;
+      return this;
+    }
+
+    public Builder<S> setMetaDataProvider(@Nullable MetaDataProvider provider) {
+      this.metaDataProvider = provider;
       return this;
     }
 

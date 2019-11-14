@@ -19,19 +19,28 @@ import io.material.catalog.R;
 
 import android.app.DatePickerDialog;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import androidx.annotation.AttrRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.StyleRes;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.picker.Month;
+import com.google.android.material.picker.metadata.MetaDataProvider;
 import com.google.android.material.snackbar.Snackbar;
+
+import android.os.Parcel;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import com.google.android.material.picker.MaterialDatePicker;
 import io.material.catalog.feature.DemoFragment;
 import java.util.Calendar;
@@ -51,10 +60,49 @@ public class PickerMainDemoFragment extends DemoFragment {
     int dialogTheme = resolveOrThrow(getContext(), R.attr.materialCalendarTheme);
     int fullscreenTheme = resolveOrThrow(getContext(), R.attr.materialCalendarFullscreenTheme);
 
+    LayoutInflater inflater = requireActivity().getLayoutInflater();
+
+    MetaDataProvider<View> metaDataProvider = new MetaDataProvider<View>() {
+      @Override
+      public int describeContents() {
+        return 0;
+      }
+
+      @Override
+      public void writeToParcel(Parcel dest, int flags) {
+
+      }
+
+      @NonNull
+      @Override
+      public View getMetaData(@NonNull ViewGroup parent, @NonNull Month month, int dayOfMonth) {
+        return inflater.inflate(R.layout.mtrl_calendar_day_meta_data, parent, false);
+      }
+
+      @Override
+      public void bindData(@NonNull View metaDataView, @NonNull Month month, int dayOfMonth) {
+        if (dayOfMonth % 2 == 0) {
+          metaDataView.setVisibility(View.VISIBLE);
+
+          TextView metaDataTextView = metaDataView.findViewById(R.id.day_meta_data_view);
+          ImageView metaDataIconView = metaDataView.findViewById(R.id.day_meta_data_icon_view);
+
+          metaDataTextView.setText("\uD83D\uDE0A");
+          metaDataIconView.setImageResource(R.drawable.asld_clock_clock);
+        } else {
+          metaDataView.setVisibility(View.INVISIBLE);
+        }
+      }
+    };
+
+//    setupDialogFragment(
+//        dialogLaunchersLayout,
+//        R.string.cat_picker_date_calendar,
+//        MaterialDatePicker.Builder.datePicker());
     setupDialogFragment(
         dialogLaunchersLayout,
         R.string.cat_picker_date_calendar,
-        MaterialDatePicker.Builder.datePicker());
+        MaterialDatePicker.Builder.datePicker().setMetaDataProvider(metaDataProvider));
     setupDialogFragment(
         dialogLaunchersLayout,
         R.string.cat_picker_date_calendar_fullscreen,

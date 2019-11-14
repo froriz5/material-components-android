@@ -19,6 +19,7 @@ import com.google.android.material.R;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.LayoutParams;
 import android.view.LayoutInflater;
@@ -29,6 +30,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.google.android.material.picker.MaterialCalendar.OnDayClickListener;
+import com.google.android.material.picker.metadata.MetaDataProvider;
 
 /**
  * Manages the instances of {@link MaterialCalendarGridView} that represent each month in a {@link
@@ -38,6 +40,7 @@ class MonthsPagerAdapter extends RecyclerView.Adapter<MonthsPagerAdapter.ViewHol
 
   private final CalendarConstraints calendarConstraints;
   private final DateSelector<?> dateSelector;
+  @Nullable private final MetaDataProvider metaDataProvider;
   private final OnDayClickListener onDayClickListener;
   private final int itemHeight;
 
@@ -45,6 +48,7 @@ class MonthsPagerAdapter extends RecyclerView.Adapter<MonthsPagerAdapter.ViewHol
       Context context,
       DateSelector<?> dateSelector,
       CalendarConstraints calendarConstraints,
+      @Nullable MetaDataProvider metaDataProvider,
       OnDayClickListener onDayClickListener) {
     Month firstPage = calendarConstraints.getStart();
     Month lastPage = calendarConstraints.getEnd();
@@ -64,6 +68,7 @@ class MonthsPagerAdapter extends RecyclerView.Adapter<MonthsPagerAdapter.ViewHol
     this.itemHeight = daysHeight + labelHeight;
     this.calendarConstraints = calendarConstraints;
     this.dateSelector = dateSelector;
+    this.metaDataProvider = metaDataProvider;
     this.onDayClickListener = onDayClickListener;
     setHasStableIds(true);
   }
@@ -104,7 +109,7 @@ class MonthsPagerAdapter extends RecyclerView.Adapter<MonthsPagerAdapter.ViewHol
     if (monthGrid.getAdapter() != null && month.equals(monthGrid.getAdapter().month)) {
       monthGrid.getAdapter().notifyDataSetChanged();
     } else {
-      MonthAdapter monthAdapter = new MonthAdapter(month, dateSelector, calendarConstraints);
+      MonthAdapter monthAdapter = new MonthAdapter(month, dateSelector, calendarConstraints, metaDataProvider);
       monthGrid.setNumColumns(month.daysInWeek);
       monthGrid.setAdapter(monthAdapter);
     }

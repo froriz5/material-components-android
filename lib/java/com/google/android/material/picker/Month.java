@@ -89,6 +89,14 @@ public final class Month implements Comparable<Month>, Parcelable {
     return Month.create(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
   }
 
+  public int getMonth() {
+    return month;
+  }
+
+  public int getYear() {
+    return year;
+  }
+
   int daysFromStartOfWeekToFirstOfMonth() {
     int difference = calendar.get(Calendar.DAY_OF_WEEK) - calendar.getFirstDayOfWeek();
     if (difference < 0) {

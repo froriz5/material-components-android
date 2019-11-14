@@ -16,6 +16,7 @@
 package com.google.android.material.picker;
 
 import com.google.android.material.R;
+import com.google.android.material.picker.metadata.MetaDataProvider;
 
 import android.content.Context;
 import androidx.annotation.Nullable;
@@ -24,6 +25,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.util.Calendar;
 
@@ -49,10 +51,13 @@ class MonthAdapter extends BaseAdapter {
   CalendarStyle calendarStyle;
   final CalendarConstraints calendarConstraints;
 
-  MonthAdapter(Month month, DateSelector<?> dateSelector, CalendarConstraints calendarConstraints) {
+  @Nullable MetaDataProvider metaDataProvider;
+
+  MonthAdapter(Month month, DateSelector<?> dateSelector, CalendarConstraints calendarConstraints, @Nullable MetaDataProvider metaDataProvider) {
     this.month = month;
     this.dateSelector = dateSelector;
     this.calendarConstraints = calendarConstraints;
+    this.metaDataProvider = metaDataProvider;
   }
 
   @Override
@@ -96,17 +101,25 @@ class MonthAdapter extends BaseAdapter {
   }
 
   @Override
-  public TextView getView(int position, View convertView, ViewGroup parent) {
+  public LinearLayout getView(int position, View convertView, ViewGroup parent) {
     initializeStyles(parent.getContext());
-    TextView day = (TextView) convertView;
+    LinearLayout dayContainer = (LinearLayout) convertView;
+//    TextView day = (TextView) convertView;
+
     if (convertView == null) {
       LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-      day = (TextView) layoutInflater.inflate(R.layout.mtrl_calendar_day, parent, false);
+//      day = (TextView) layoutInflater.inflate(R.layout.mtrl_calendar_day, parent, false);
+      dayContainer = (LinearLayout) layoutInflater.inflate(R.layout.mtrl_calendar_day, parent, false);
     }
+
+    TextView day = dayContainer.findViewById(R.id.day_view);
+
     int offsetPosition = position - firstPositionInMonth();
     if (offsetPosition < 0 || offsetPosition >= month.daysInMonth) {
-      day.setVisibility(View.GONE);
-      day.setEnabled(false);
+//      day.setVisibility(View.GONE);
+//      day.setEnabled(false);
+      dayContainer.setVisibility(View.GONE);
+      dayContainer.setEnabled(false);
     } else {
       int dayNumber = offsetPosition + 1;
       // The tag and text uniquely identify the view within the MaterialCalendar for testing
@@ -118,14 +131,41 @@ class MonthAdapter extends BaseAdapter {
       } else {
         day.setContentDescription(DateStrings.getYearMonthDayOfWeekDay(dayInMillis));
       }
-      day.setVisibility(View.VISIBLE);
-      day.setEnabled(true);
+//      day.setVisibility(View.VISIBLE);
+//      day.setEnabled(true);
+      dayContainer.setVisibility(View.VISIBLE);
+      dayContainer.setEnabled(true);
+
+      if (metaDataProvider != null) {
+        boolean isAttached = dayContainer.getChildCount() > 1;
+        View metaDataContainerView;
+        if (isAttached) {
+          metaDataContainerView = dayContainer.getChildAt(1);
+        } else {
+          metaDataContainerView = metaDataProvider.getMetaData(parent, month, dayNumber);
+          dayContainer.addView(metaDataContainerView);
+        }
+
+//        if (metaDataContainerView == null) {
+//          dayContainer.getChildAt(1).setVisibility(View.INVISIBLE);
+//        }
+
+//        if (!isAttached) {
+////          dayContainer.addView(metaDataContainerView);
+//          metaDataProvider.bindData(metaDataContainerView, month, dayNumber);
+//        } else {
+////          metaDataContainerView = dayContainer.getChildAt(1);
+//          metaDataProvider.bindData(metaDataContainerView, month, dayNumber);
+//        }
+        metaDataProvider.bindData(metaDataContainerView, month, dayNumber);
+      }
     }
 
     Long date = getItem(position);
     if (date != null) {
       if (calendarConstraints.getDateValidator().isValid(date)) {
-        day.setEnabled(true);
+//        day.setEnabled(true);
+        dayContainer.setEnabled(true);
         if (dateSelector.getSelectedDays().contains(date)) {
           calendarStyle.selectedDay.styleItem(day);
         } else if (DateUtils.isToday(date)) {
@@ -134,11 +174,13 @@ class MonthAdapter extends BaseAdapter {
           calendarStyle.day.styleItem(day);
         }
       } else {
-        day.setEnabled(false);
+//        day.setEnabled(false);
+        dayContainer.setEnabled(false);
         calendarStyle.invalidDay.styleItem(day);
       }
     }
-    return day;
+//    return day;
+    return dayContainer;
   }
 
   private void initializeStyles(Context context) {
